@@ -1,6 +1,6 @@
 Final project of *Neural Networks & Deep Learning* course.
 
-Based on [*Neural network time-series classifiers for gravitational-wave searches in single-detector periods* by Trovato *et al.*, 2023](https://arxiv.org/abs/2307.09268).
+Based on [*Neural network time-series classifiers for gravitational-wave searches in single-detector periods*](https://arxiv.org/abs/2307.09268), Trovato *et al.*, 2023.
 
 The complete dataset can be found [here](https://zenodo.org/records/11093596).
 
