@@ -1,25 +1,23 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torch
+from torch.utils.data import Dataset
+import pickle
+
 
 # data path
-data_path = '/mnt/NNDL_gd/GW_data/datasets/'
-
-# data transformation
-transform = transforms.ToTensor().float64()
+data_path = '/mnt/POD/NNDL_gd/GW_data/datasets/'
 
 class GW_dataset(Dataset):
 
-    def __init__(self, dataset_type, path=data_path, transform=transform):
+    def __init__(self, dataset_type, path=data_path):
         """
         dataset_type: training, validation, testing
         """
         dataset_file = path+dataset_type+'_data.pkl' 
         with open(dataset_file, 'rb') as file:
             dataset = pickle.load(file)
-        self.x = dataset[0:-1]
-        self.y = dataset[:,-1]
-        self.transform = transform
+        dataset = dataset.reshape(dataset.shape[0], 1, -1)
+        self.x = dataset[:, :, 0:-1]
+        self.y = dataset[:, 0, -1]
 
     def __len__(self):
         return len(self.y)
@@ -27,6 +25,5 @@ class GW_dataset(Dataset):
     def __getitem__(self, idx):
         x = self.x[idx]
         y = self.y[idx]
-        if self.transform:
-            x = self.transform(x)
+        x = torch.tensor(x, dtype=torch.float64)
         return x, y

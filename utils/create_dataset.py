@@ -4,7 +4,7 @@
 import numpy as np
 import pickle
 
-data_path = "/mnt/NNDL_gd/GW_data/data" 
+data_path = "/mnt/POD/NNDL_gd/GW_data/data" 
 
 # dataset splitting percentages
 

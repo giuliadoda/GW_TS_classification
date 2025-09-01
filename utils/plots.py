@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
+path = '/mnt/POD/NNDL_gd/code/GW_TS_classification/plots/'
+
 # plot losses and accuracies (training and validation)
 def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes = 3):
 
@@ -16,12 +18,12 @@ def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_lo
     ax.set_xlabel('epoch')
     ax.set_ylabel('loss')
 
-    ax.plot(epoch, train_loss_log, label='Training')
-    ax.plot(epoch, val_loss_log, label='Validation')
+    ax.plot(epochs, train_loss_log, label='Training')
+    ax.plot(epochs, val_loss_log, label='Validation')
 
     ax.legend()
 
-    fig.savefig('/mnt/NNDL_gd/code/GW_TS_classification/plots/'+model+'_loss.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
+    fig.savefig(path+model+'_loss.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.close(fig)
 
     # accuracies
@@ -43,7 +45,7 @@ def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_lo
 
     ax.legend()
 
-    fig.savefig('/mnt/NNDL_gd/code/GW_TS_classification/plots/'+model+'_acc.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
+    fig.savefig(path+model+'_acc.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.close(fig)
 
 
@@ -66,7 +68,7 @@ def plot_ROC(model, fpr, tpr, roc_auc, n_classes=3):
     
     ax.legend()
 
-    fig.savefig('/mnt/NNDL_gd/code/GW_TS_classification/plots/'+model+'_ROC.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
+    fig.savefig(path+model+'_ROC.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.close(fig)
 
 
@@ -86,8 +88,7 @@ def plot_CM(model, preds, labels):
 
     ax.set_title(model + ' confusion matrix')
 
-    fig.savefig(f'/mnt/NNDL_gd/code/GW_TS_classification/plots/{model}_CM.png',
-                bbox_inches='tight', pad_inches=0.6, dpi=400)
+    fig.savefig(path+model+'_CM.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.close(fig)
 
 
@@ -96,7 +97,7 @@ def plot_PS(model, probs, labels, n_classes=3):
 
     classes = ['Noise', 'Signal', 'Glitch']
 
-    fig, ax = plt.subplots(10,6)
+    fig, ax = plt.subplots(figsize=(10,6))
 
     for c in range(n_classes):
         mask = (labels == c)
@@ -107,5 +108,5 @@ def plot_PS(model, probs, labels, n_classes=3):
     ax.set_title('Predicted signal probability distribution')
     ax.legend(title='True class')
 
-    fig.savefig('/mnt/NNDL_gd/code/GW_TS_classification/plots/'+model+'_PS.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
+    fig.savefig(path+model+'_PS.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.close(fig)
