@@ -1,7 +1,10 @@
+# This script takes the datasets created by the authors 
+# and creates more balanced datasets.
+
 import numpy as np
 import pickle
 
-data_path = "/Users/giuliadoda/university/PoD/NNDL/NNDL_final_proj/gw_data/" # CHANGE
+data_path = "/mnt/NNDL_gd/GW_data/data" 
 
 # dataset splitting percentages
 
@@ -25,19 +28,23 @@ def load_concat(label, path=data_path):
 
     X = np.concatenate((X_train, X_test), axis=0)
     Y = np.concatenate((Y_train, Y_test), axis=0)
+    Y = Y.reshape(-1,1)
 
-    data = np.concatenate((X,Y), axis=1)
+    data = np.hstack((X,Y))
+
+    return data
 
 def dataset_split(dataset, train=p_train, valid=p_valid, test=p_test):
     """
     Split each dataset into train, validation and test.
     """
+
     N = len(dataset)
     n_train = int(p_train*N)
     n_valid = int(p_valid*N)
     n_test = int(p_test*N)
 
-    np.random.shuffle(dataset) # to ensure we have no bias
+    np.random.shuffle(dataset) 
 
     train = dataset[:n_train]
     valid = dataset[n_train:n_train+n_valid]
@@ -81,14 +88,14 @@ if __name__=="__main__":
     np.random.shuffle(test_dataset)
 
     # save datasets
-    training_file = data_path+'training_data.pkl'
+    training_file = 'training_data.pkl'
     with open(training_file, 'wb') as file:
         pickle.dump(training_dataset, file)
 
-    validation_file = data_path+'validation_data.pkl'
+    validation_file = 'validation_data.pkl'
     with open(validation_file, 'wb') as file:
         pickle.dump(validation_dataset, file)
 
-    test_file = data_path+'test_data.pkl'
+    test_file = 'test_data.pkl'
     with open(test_file, 'wb') as file:
         pickle.dump(test_dataset, file)
