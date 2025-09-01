@@ -9,5 +9,6 @@ The aim of this project is to implement various time series classifiers and anal
 Three neural networks model have been implemented:
 - Convolutional Neural Network,
 - [Temporal Convolutional Neural Network](https://arxiv.org/abs/1803.01271),
-- [Inception Time Neural Network](https://link.springer.com/article/10.1007/s10618-020-00710-y).
+- [Inception Time Neural Network](https://link.springer.com/article/10.1007/s10618-020-00710-y). 
+  
 They have been used to perform time series classification between data segments containing gravitational waves signal or noise. 
