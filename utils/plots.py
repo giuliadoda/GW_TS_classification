@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
+
 path = '/mnt/POD/NNDL_gd/code/GW_TS_classification/plots/'
+classes = ['Noise', 'Signal', 'Glitch']
+
 
 # plot losses and accuracies (training and validation)
 def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes = 3):
@@ -34,14 +37,11 @@ def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_lo
     ax.set_xlabel('epoch')
     ax.set_ylabel('accuracy')
 
-    classes = ['Noise', 'Signal', 'Glitch']
-
-    # NOT SURE (class indexing)
     for c in range(n_classes):
         train_class_acc = [acc[c] for acc in train_acc_log]
         val_class_acc = [acc[c] for acc in val_acc_log]
-        ax.plot(epochs, train_class_acc, label=classes[c]+'(training)', color='C'+c)
-        ax.plot(epochs, val_class_acc, label=classes[c]+'(validation)', color='C'+c, linestyle='dashed')
+        ax.plot(epochs, train_class_acc, label=classes[c]+'(training)', color='C'+str(c))
+        ax.plot(epochs, val_class_acc, label=classes[c]+'(validation)', color='C'+str(c), linestyle='dashed')
 
     ax.legend()
 
@@ -55,16 +55,13 @@ def plot_ROC(model, fpr, tpr, roc_auc, n_classes=3):
     fig, ax = plt.subplots(figsize=(10,6))
     ax.grid(alpha = 0.4)
 
-    # 0: noise, 1: signal, 2: glitch
-    labels = ['Noise', 'Signal', 'Glitch'] 
-
     ax.set_title(model + ' ROC curves')
     ax.set_ylabel('true positive rate')
     ax.set_xlabel('false positive rate')
     ax.plot(fpr[0], fpr[0], label = 'Random classifier', linestyle = 'dashed', color = 'grey')
 
     for i in range(n_classes):
-        ax.plot(fpr[i], tpr[i], label = labels[i] + f'(AUC = {roc_auc[i]:.2f})' )
+        ax.plot(fpr[i], tpr[i], label = classes[i] + f'(AUC = {roc_auc[i]:.2f})' )
     
     ax.legend()
 
@@ -76,8 +73,6 @@ def plot_ROC(model, fpr, tpr, roc_auc, n_classes=3):
 def plot_CM(model, preds, labels):
 
     # model (string): CNN, TCN, IT
-
-    classes = ['Noise', 'Signal', 'Glitch']
 
     cm = confusion_matrix(labels, preds, normalize='true')
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
@@ -94,8 +89,6 @@ def plot_CM(model, preds, labels):
 
 # plot signal probability distribution
 def plot_PS(model, probs, labels, n_classes=3):
-
-    classes = ['Noise', 'Signal', 'Glitch']
 
     fig, ax = plt.subplots(figsize=(10,6))
 

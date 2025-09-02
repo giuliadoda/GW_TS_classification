@@ -4,17 +4,20 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torchmetrics.classification import MulticlassAccuracy
+from torch.utils.data import DataLoader
 
 from utils import dataset, plots, metrics
-
-from torch.utils.data import DataLoader
 
 
 seed = 0
 batch_size = 32
 nw = 4
 n_epochs = 50
-num_classes = 3
+n_classes = 3
+
+# class weights
+weights = [1,1,5]
 
 
 # model
@@ -90,7 +93,7 @@ train_DL = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_worker
 valid_DL = DataLoader(valid_set, batch_size=batch_size, shuffle=True, num_workers=nw)
 test_DL = DataLoader(test_set, batch_size=batch_size, shuffle=True, num_workers=nw)
 
-# check if a cuda GPU is available
+# check if GPU is available
 if torch.cuda.is_available():
     print('GPU availble')
     # define the device
@@ -107,24 +110,25 @@ torch.cuda.manual_seed_all(seed)
 cnn_net = CNN().to(device)
 
 # loss
-loss_function = nn.CrossEntropyLoss()
+weights = torch.tensor(weights).float().to(device)
+loss_function = nn.CrossEntropyLoss(weight=weights)
 
 # optimizer
 cnn_opt = optim.Adam(cnn_net.parameters())
 
-train_loss_log = []
-train_acc_log = []
+# metrics
+train_loss_log, train_acc_log = [], []
+val_loss_log, val_acc_log = [], []
 
-val_loss_log = []
-val_acc_log = []
+acc_metric = MulticlassAccuracy(num_classes=n_classes, average=None).to(device)
 
 # training/validation loop
 for epoch in range(n_epochs):
     print(f"\n-----------------\nEpoch {epoch+1}/{n_epochs}\n-----------------")
 
-    train_loss = []
-    correct_counts = torch.zeros(num_classes, device=device)
-    total_counts = torch.zeros(num_classes, device=device)
+    cnn_net.train()
+    epoch_losses = []
+    acc_metric.reset()
 
     # training
     for sample in train_DL:
@@ -146,33 +150,26 @@ for epoch in range(n_epochs):
         # weight update
         cnn_opt.step()
 
-        # log loss
-        loss_b = loss.detach().cpu().numpy()
-        train_loss.append(loss_b)
-
-        # accuracy
-        preds = out.argmax(dim=1)
-        for c in range(num_classes):
-            mask = (yb == c)
-            correct_counts[c] += (preds[mask] == c).sum()
-            total_counts[c] += mask.sum()
+        # log loss and accuracy
+        epoch_losses.append(loss.item())
+        acc_metric.update(out, yb)
 
     # average loss and accuracy
-    avg_loss = np.mean(train_loss)
-    avg_acc = {c: (correct_counts[c] / total_counts[c]).item() if total_counts[c] > 0 else np.nan for c in range(num_classes)}
+    avg_loss = np.mean(epoch_losses)
+    class_acc = acc_metric.compute().detach().cpu().numpy()
 
-    train_loss_log.append(avg_loss)
-    train_acc_log.append(avg_acc)
+
+    train_loss_log.append({"avg": avg_loss})
+    train_acc_log.append({c: class_acc[c] for c in range(n_classes)})
 
     print(f"Train loss: {avg_loss:.4f}")
-    for c, acc in avg_acc.items():
-        print(f"  Class {c} accuracy: {acc:.4f}")
+    for c, acc in enumerate(class_acc):
+        print(f" Class {c} accuracy: {acc:.4f}")
 
     # validation
     val_loss = []
-    correct_counts = torch.zeros(num_classes, device=device)
-    total_counts = torch.zeros(num_classes, device=device)
     cnn_net.eval()
+    acc_metric.reset()
     with torch.no_grad():
         for sample in valid_DL:
             # data to device
@@ -186,25 +183,18 @@ for epoch in range(n_epochs):
             l = loss_function(out, yb)
 
             # save
-            loss_b = l.detach().cpu().numpy()
-            val_loss.append(loss_b)
-
-            # accuracy
-            preds = out.argmax(dim=1)
-            for c in range(num_classes):
-                mask = (yb == c)
-                correct_counts[c] += (preds[mask] == c).sum()
-                total_counts[c] += mask.sum()
+            val_loss.append(l.item())
+            acc_metric.update(out, yb)
         
-    val_loss = np.mean(val_loss)
-    print('Validation loss:', val_loss)
-    val_loss_log.append(val_loss)
+    avg_val_loss = np.mean(val_loss)
+    class_val_acc = acc_metric.compute().detach().cpu().numpy()
 
-    val_acc = {c: (correct_counts[c] / total_counts[c]).item() if total_counts[c] > 0 else np.nan for c in range(num_classes)}
-    val_acc_log.append(val_acc)
+    val_loss_log.append({"avg": avg_val_loss})
+    val_acc_log.append({c: class_val_acc[c] for c in range(n_classes)})
 
-    for c, acc in val_acc.items():
-        print(f"  Class {c} accuracy: {acc:.4f}")
+    print(f"Validation loss: {avg_val_loss:.4f}")
+    for c, acc in enumerate(class_val_acc):
+        print(f" Class {c} accuracy: {acc:.4f}")
 
 
 plots.plot_loss_acc('CNN', train_loss_log, val_acc_log, train_acc_log, val_acc_log)
