@@ -28,45 +28,48 @@ class CNN(nn.Module):
 
         self.conv1 = nn.Sequential(
             nn.Conv1d(in_channels=1, 
-                      out_channels=256, 
-                      kernel_size=16, 
-                      stride=4),
-            nn.MaxPool1d(kernel_size=4, stride = 1), # default stride: kernel_size :))
-            nn.Dropout(0.5),
+                      out_channels=32, 
+                      kernel_size=4, 
+                      stride=1),
+            nn.MaxPool1d(kernel_size=2, stride = 1), # default stride: kernel_size 
+            nn.Dropout(0.1),
             nn.ReLU(True))
         
         self.conv2 = nn.Sequential(
-            nn.Conv1d(in_channels=256, 
+            nn.Conv1d(in_channels=32, 
+                      out_channels=64, 
+                      kernel_size=4, 
+                      stride=2),
+            nn.MaxPool1d(kernel_size=2, stride = 1),
+            nn.Dropout(0.1),
+            nn.ReLU(True))
+        
+        self.conv3 = nn.Sequential(
+            nn.Conv1d(in_channels=64, 
                       out_channels=128, 
                       kernel_size=8, 
                       stride=2),
             nn.MaxPool1d(kernel_size=4, stride = 1),
-            nn.Dropout(0.5),
-            nn.ReLU(True))
-        
-        self.conv3 = nn.Sequential(
-            nn.Conv1d(in_channels=128, 
-                      out_channels=64, 
-                      kernel_size=8, 
-                      stride=2),
-            nn.MaxPool1d(kernel_size=2, stride = 1),
             nn.Dropout(0.25),
             nn.ReLU(True))
 
         self.conv4 = nn.Sequential(
-            nn.Conv1d(in_channels=64, 
-                      out_channels=64, 
-                      kernel_size=4, 
-                      stride=1),
-            nn.MaxPool1d(kernel_size=2, stride = 1),
+            nn.Conv1d(in_channels=128, 
+                      out_channels=256, 
+                      kernel_size=16, 
+                      stride=4),
+            nn.MaxPool1d(kernel_size=4, stride = 1),
             nn.Dropout(0.25),
             nn.ReLU(True),
             nn.AdaptiveAvgPool1d(1),
             nn.Dropout(0.1)
         )
         
-        self.lin = nn.Linear(in_features=64, 
-                      out_features=3)
+        self.lin = nn.Sequential(
+            nn.Linear(in_features=256, 
+                      out_features=64),
+            nn.Linear(in_features=64, 
+                      out_features=3))
         
         self.softmax = nn.Softmax(dim=1)
 
