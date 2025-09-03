@@ -17,7 +17,7 @@ n_epochs = 50
 n_classes = 2   # TRYING WITH 2 CLASSES!!
 
 # class weights
-weights = [1,1,5]
+weights = [1,1.2]
 
 
 # model
