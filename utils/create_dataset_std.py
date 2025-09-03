@@ -21,6 +21,8 @@ def load_concat(label, path=data_path):
     Load files and create a dataset for each class.
     """
 
+    print('\n'+label)
+
     f = np.load(path+'/'+label+'_train.npz')
     X_train, Y_train = f['X'], f['Y']
 
@@ -31,7 +33,6 @@ def load_concat(label, path=data_path):
     print('X shape', X.shape)
 
     # standardize
-    print(label)
     mean = X.mean(axis=1, keepdims=True)
     print('mean shape', mean.shape)
     std = X.std(axis=1, keepdims=True)
@@ -100,14 +101,14 @@ if __name__=="__main__":
     np.random.shuffle(test_dataset)
 
     # save datasets
-    training_file = dataset_path+'/training_data.pkl'
+    training_file = dataset_path+'/training_data_std.pkl'
     with open(training_file, 'wb') as file:
         pickle.dump(training_dataset, file)
 
-    validation_file = dataset_path+'/validation_data.pkl'
+    validation_file = dataset_path+'/validation_data_std.pkl'
     with open(validation_file, 'wb') as file:
         pickle.dump(validation_dataset, file)
 
-    test_file = dataset_path+'/test_data.pkl'
+    test_file = dataset_path+'/test_data_std.pkl'
     with open(test_file, 'wb') as file:
         pickle.dump(test_dataset, file)

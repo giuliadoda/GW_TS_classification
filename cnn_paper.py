@@ -15,7 +15,7 @@ batch_size = 32
 LR = 1e-04
 nw = 4
 n_epochs = 50
-n_classes = 2  
+n_classes = 3  
 
 # class weights
 if n_classes==2:
@@ -32,37 +32,37 @@ class CNN(nn.Module):
 
         self.conv1 = nn.Sequential(
             nn.Conv1d(in_channels=1, 
-                      out_channels=32, 
-                      kernel_size=4, 
-                      stride=1),
-            nn.MaxPool1d(kernel_size=2, stride = 1), # default stride: kernel_size 
+                      out_channels=256, 
+                      kernel_size=16, 
+                      stride=4),
+            nn.MaxPool1d(kernel_size=4, stride = 1), # default stride: kernel_size 
             nn.Dropout(0.1),
             nn.ReLU(True))
         
         self.conv2 = nn.Sequential(
-            nn.Conv1d(in_channels=32, 
-                      out_channels=64, 
-                      kernel_size=4, 
-                      stride=2),
-            nn.MaxPool1d(kernel_size=2, stride = 1),
+            nn.Conv1d(in_channels=256, 
+                      out_channels=128, 
+                      kernel_size=8, 
+                      stride=4),
+            nn.MaxPool1d(kernel_size=4, stride = 1),
             nn.Dropout(0.1),
             nn.ReLU(True))
         
         self.conv3 = nn.Sequential(
-            nn.Conv1d(in_channels=64, 
-                      out_channels=128, 
+            nn.Conv1d(in_channels=128, 
+                      out_channels=64, 
                       kernel_size=8, 
                       stride=2),
-            nn.MaxPool1d(kernel_size=4, stride = 1),
+            nn.MaxPool1d(kernel_size=2, stride = 1),
             nn.Dropout(0.25),
             nn.ReLU(True))
 
         self.conv4 = nn.Sequential(
-            nn.Conv1d(in_channels=128, 
-                      out_channels=256, 
-                      kernel_size=16, 
-                      stride=4),
-            nn.MaxPool1d(kernel_size=4, stride = 1),
+            nn.Conv1d(in_channels=64, 
+                      out_channels=64, 
+                      kernel_size=4, 
+                      stride=1),
+            nn.MaxPool1d(kernel_size=2, stride = 1),
             nn.Dropout(0.25),
             nn.ReLU(True),
             nn.AdaptiveAvgPool1d(1),
@@ -70,8 +70,6 @@ class CNN(nn.Module):
         )
         
         self.lin = nn.Sequential(
-            nn.Linear(in_features=256, 
-                      out_features=64),
             nn.Linear(in_features=64, 
                       out_features=n_classes))
         

@@ -17,6 +17,7 @@ batch_size = 32
 nw = 4
 n_epochs = 50
 n_classes = 3
+std = False
 
 # class weights
 weights = [1,1,5]
@@ -66,9 +67,9 @@ class TempConvNet(nn.Module):
 
 
 # load data
-train_set = dataset.GW_dataset('training', n_classes=n_classes)
-valid_set = dataset.GW_dataset('validation', n_classes=n_classes)
-test_set = dataset.GW_dataset('test', n_classes=n_classes)
+train_set = dataset.GW_dataset('training', n_classes=n_classes, std = std)
+valid_set = dataset.GW_dataset('validation', n_classes=n_classes, std = std)
+test_set = dataset.GW_dataset('test', n_classes=n_classes, std = std)
 
 train_DL = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=nw)
 valid_DL = DataLoader(valid_set, batch_size=batch_size, shuffle=True, num_workers=nw)
