@@ -8,11 +8,15 @@ data_path = '/mnt/POD/NNDL_gd/GW_data/datasets/'
 
 class GW_dataset(Dataset):
 
-    def __init__(self, dataset_type, path=data_path):
+    def __init__(self, dataset_type, path=data_path, n_classes=3):
         """
         dataset_type: training, validation, testing
         """
-        dataset_file = path+dataset_type+'_data_01.pkl' 
+        if n_classes==3:
+            fin_str = '_data.pkl'
+        elif n_classes==2:
+            fin_str = '_data_01.pkl' 
+        dataset_file = path+dataset_type+fin_str
         with open(dataset_file, 'rb') as file:
             dataset = pickle.load(file)
         dataset = dataset.reshape(dataset.shape[0], 1, -1)
