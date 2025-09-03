@@ -8,6 +8,24 @@ path = '/mnt/POD/NNDL_gd/code/GW_TS_classification/plots/'
 classes = ['Noise', 'Signal', 'Glitch']
 
 
+# plot signals
+def plot_TS(ts):
+
+    time = np.linspace(0,1,num=2048)
+
+    fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(28,16))
+
+    for i in range(3):
+        ax[i].grid(alpha=0.4)
+        ax[i].plot(time, ts[i])
+        ax[i].set_title(classes[i]+' example')
+        ax[i].set_xlabel('time (s)')
+        ax[i].set_ylabel('strain (a.u.)')
+
+    fig.savefig('./plots/timeseries.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
+    plt.show()
+    plt.close(fig)
+
 # plot losses and accuracies (training and validation)
 def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes = 3):
 
