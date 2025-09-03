@@ -14,7 +14,7 @@ seed = 0
 batch_size = 32
 nw = 4
 n_epochs = 50
-n_classes = 3
+n_classes = 2   # TRYING WITH 2 CLASSES!!
 
 # class weights
 weights = [1,1,5]
@@ -69,7 +69,7 @@ class CNN(nn.Module):
             nn.Linear(in_features=256, 
                       out_features=64),
             nn.Linear(in_features=64, 
-                      out_features=3))
+                      out_features=n_classes))
         
         self.softmax = nn.Softmax(dim=1)
 
@@ -162,7 +162,7 @@ for epoch in range(n_epochs):
     class_acc = acc_metric.compute().detach().cpu().numpy()
 
 
-    train_loss_log.append({"avg": avg_loss})
+    train_loss_log.append(avg_loss)
     train_acc_log.append({c: class_acc[c] for c in range(n_classes)})
 
     print(f"Train loss: {avg_loss:.4f}")
@@ -192,7 +192,7 @@ for epoch in range(n_epochs):
     avg_val_loss = np.mean(val_loss)
     class_val_acc = acc_metric.compute().detach().cpu().numpy()
 
-    val_loss_log.append({"avg": avg_val_loss})
+    val_loss_log.append(avg_val_loss)
     val_acc_log.append({c: class_val_acc[c] for c in range(n_classes)})
 
     print(f"Validation loss: {avg_val_loss:.4f}")
@@ -200,4 +200,4 @@ for epoch in range(n_epochs):
         print(f" Class {c} accuracy: {acc:.4f}")
 
 
-plots.plot_loss_acc('CNN', train_loss_log, val_acc_log, train_acc_log, val_acc_log)
+plots.plot_loss_acc('CNN', train_loss_log, val_loss_log, train_acc_log, val_acc_log)

@@ -12,7 +12,7 @@ class GW_dataset(Dataset):
         """
         dataset_type: training, validation, testing
         """
-        dataset_file = path+dataset_type+'_data.pkl' 
+        dataset_file = path+dataset_type+'_data_01.pkl' 
         with open(dataset_file, 'rb') as file:
             dataset = pickle.load(file)
         dataset = dataset.reshape(dataset.shape[0], 1, -1)
