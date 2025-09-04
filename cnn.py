@@ -15,7 +15,7 @@ batch_size = 32
 LR = 1e-04
 nw = 4
 n_epochs = 50
-n_classes = 2  
+n_classes = 3  
 std = False
 
 # class weights

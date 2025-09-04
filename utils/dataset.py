@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 import pickle
+from os import path
 
 
 # data path
@@ -12,15 +13,16 @@ class GW_dataset(Dataset):
         """
         dataset_type: training, validation, testing
         """
-        if n_classes == 3 and std:
-            fin_str = '_data_std.pkl'
-        elif n_classes == 3 and not std:
-            fin_str = '_data.pkl'
-        elif n_classes == 2:
+        if n_classes == 3:
+            if std:
+                fin_str = '_data_std.pkl'
+            else:
+                fin_str = '_data.pkl'
+        if n_classes == 2:
             fin_str = '_data_01.pkl'
         dataset_file = path+dataset_type+fin_str
-        with open(dataset_file, 'rb') as file:
-            dataset = pickle.load(file)
+        with open(dataset_file, 'rb') as f:
+            dataset = pickle.load(f)
         dataset = dataset.reshape(dataset.shape[0], 1, -1)
         self.x = dataset[:, :, 0:-1]
         self.y = dataset[:, 0, -1]
