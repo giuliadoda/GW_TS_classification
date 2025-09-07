@@ -58,8 +58,8 @@ def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_lo
     for c in range(n_classes):
         train_class_acc = [acc[c] for acc in train_acc_log]
         val_class_acc = [acc[c] for acc in val_acc_log]
-        ax.plot(epochs, train_class_acc, label=classes[c]+'(training)', color='C'+str(c))
-        ax.plot(epochs, val_class_acc, label=classes[c]+'(validation)', color='C'+str(c), linestyle='dashed')
+        ax.plot(epochs, train_class_acc, label=classes[c]+' (training)', color='C'+str(c))
+        ax.plot(epochs, val_class_acc, label=classes[c]+' (validation)', color='C'+str(c), linestyle='dashed')
 
     ax.legend()
 

@@ -16,7 +16,7 @@ LR = 1e-04
 nw = 4
 n_epochs = 50
 n_classes = 3  
-std = False
+std = True
 
 # class weights
 if n_classes==2:
