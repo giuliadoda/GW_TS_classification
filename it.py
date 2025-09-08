@@ -13,9 +13,16 @@ from utils import dataset, plots, metrics
 seed = 0
 batch_size = 32
 nw = 4
-n_epochs = 50
+n_epochs = 30
+LR = 1e-02
 n_classes = 3
 std = False
+
+# class weights
+if n_classes==2:
+    weights = [1,1.2]
+elif n_classes==3:
+    weights = [1,1,5]
 
 
 # model
@@ -154,10 +161,11 @@ torch.cuda.manual_seed_all(seed)
 it_net = InceptionTime().to(device)
 
 # loss
-loss_function = nn.CrossEntropyLoss()
+weights = torch.tensor(weights).float().to(device)
+loss_function = nn.CrossEntropyLoss(weight=weights)
 
 # optimizer
-it_opt = optim.Adam(it_net.parameters())
+it_opt = optim.Adam(it_net.parameters(), lr=LR)
 
 # metrics
 train_loss_log, train_acc_log = [], []
