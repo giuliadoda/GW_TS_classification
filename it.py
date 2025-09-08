@@ -14,8 +14,8 @@ seed = 0
 batch_size = 32
 nw = 4
 n_epochs = 30
-LR = 1e-02
-n_classes = 3
+LR = 1e-03 # default
+n_classes = 2
 std = False
 
 # class weights
@@ -234,4 +234,4 @@ for epoch in range(n_epochs):
     for c, acc in enumerate(class_val_acc):
         print(f" Class {c} accuracy: {acc:.4f}")
 
-plots.plot_loss_acc('IT', train_loss_log, val_loss_log, train_acc_log, val_acc_log)
+plots.plot_loss_acc('IT', train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)

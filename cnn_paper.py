@@ -202,4 +202,4 @@ for epoch in range(n_epochs):
         print(f" Class {c} accuracy: {acc:.4f}")
 
 
-plots.plot_loss_acc('CNN', train_loss_log, val_loss_log, train_acc_log, val_acc_log)
+plots.plot_loss_acc('CNN', train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)
