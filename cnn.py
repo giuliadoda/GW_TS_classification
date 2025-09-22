@@ -224,31 +224,31 @@ end_time = time.time()
 total_time = end_time - start_time
 avg_epoch_time = total_time / n_epochs
 
-print(f"\nTotal training time: {total_time:.2f} seconds")
-print(f"Average time per epoch: {avg_epoch_time:.2f} seconds")
-
 # save times to file
-with open(model_name+'_times.txt', 'w') as f:
+time_file = './model_info/' + model_name+'_times.txt'
+with open(time_file, 'w') as f:
     f.write(str(total_time))
+    f.write('\n')
     f.write(str(avg_epoch_time))
 
 plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)
 
-plots.plot_model_params(cnn_net, save_path=model_name+"_params_hist.png")
+plots.plot_model_params(cnn_net, save_path='./plots/'+model_name+"_params_hist.png")
 
 # save trained model
-model_path = model_name + "_trained.pth"
+model_path = './models/'+ model_name + "_trained.torch"
 torch.save(cnn_net.state_dict(), model_path)
 
 # save training emissions
 emissions = tracker.stop()
 print(f"\nTotal CO2 emissions: {float(emissions):.6f} kg")
 
-with open(model_name+'_CO2.txt', 'w') as file:
+co2_file = './model_info/' + model_name+'_CO2.txt'
+with open(co2_file, 'w') as file:
     file.write(str(emissions))
 
 # analyze activations
-plots.plot_model_activations(cnn_net, test_DL, device, max_batches=1)
+plots.plot_model_activations(cnn_net, test_DL, device, max_batches=1, save_path='./plots/'+model_name+'_act.png')
 
 # test
 print('\n-- Testing  \n')
@@ -279,7 +279,8 @@ fpr, tpr, roc_auc = metrics.compute_roc(all_probs, all_labels, num_classes=n_cla
 plots.plot_ROC(model_name, fpr, tpr, roc_auc)
 
 # save AUC values + FPR and TPR points
-with open(model_name+"_ROC.txt", "w") as f:
+roc_file = './model_info/'+model_name+"_ROC.txt"
+with open(roc_file, "w") as f:
     for i, cls in enumerate(classes):
         f.write(f"{cls} AUC: {roc_auc[i]:.4f}\n")
         f.write(f"{cls} FPR: {','.join([f'{x:.6f}' for x in fpr[i]])}\n")

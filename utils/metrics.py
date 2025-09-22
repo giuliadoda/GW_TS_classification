@@ -26,11 +26,11 @@ def compute_accuracy(preds, labels, num_classes=3):
 # ROC
 def compute_roc(probs, labels, num_classes=3):
 
-    probs = np.concatenate(probs)
-    labels = np.concatenate(labels)
-
-    # one-hot encode labels
+    # force y_bin to have shape (N, num_classes)
     y_bin = label_binarize(labels, classes=list(range(num_classes)))
+    if y_bin.shape[1] == 1:  
+        # binary case: add complementary column
+        y_bin = np.hstack([1 - y_bin, y_bin])  # (N,2)
 
     fpr, tpr, roc_auc = {}, {}, {}
 

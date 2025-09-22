@@ -103,9 +103,9 @@ train_set = dataset.GW_dataset('training', n_classes=n_classes)
 valid_set = dataset.GW_dataset('validation', n_classes=n_classes)
 test_set = dataset.GW_dataset('test', n_classes=n_classes)
 
-train_DL = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=nw)
-valid_DL = DataLoader(valid_set, batch_size=batch_size, shuffle=True, num_workers=nw)
-test_DL = DataLoader(test_set, batch_size=batch_size, shuffle=True, num_workers=nw)
+train_DL = DataLoader(train_set, batch_size=batch_size, num_workers=nw)
+valid_DL = DataLoader(valid_set, batch_size=batch_size, num_workers=nw)
+test_DL = DataLoader(test_set, batch_size=batch_size, num_workers=nw)
 
 # check if GPU is available
 if torch.cuda.is_available():

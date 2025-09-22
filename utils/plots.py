@@ -5,7 +5,7 @@ import torch
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 
-path = '/mnt/POD/NNDL_gd/code/GW_TS_classification/plots/'
+path = '/mnt/POD/NNDL_gd/code/GW_TS_classification_copy/plots/'
 classes = ['Noise', 'Signal']
 
 
@@ -139,7 +139,7 @@ def plot_model_params(model, save_path=None):
     params = [(name, p) for name, p in model.named_parameters() if p.requires_grad]
     
     n_layers = len(params)
-    fig, axes = plt.subplots(1, n_layers, figsize=(5*n_layers, 4))
+    fig, axes = plt.subplots(n_layers, 2, figsize=(10, 4*n_layers)) 
     
     if n_layers == 1:
         axes = [axes]  # make iterable if only one layer
