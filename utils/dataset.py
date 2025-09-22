@@ -9,7 +9,7 @@ data_path = '/mnt/POD/NNDL_gd/GW_data/datasets/'
 
 class GW_dataset(Dataset):
 
-    def __init__(self, dataset_type, path=data_path, n_classes=3, std=False):
+    def __init__(self, dataset_type, path=data_path, n_classes=2, std=False):
         """
         dataset_type: training, validation, testing
         """

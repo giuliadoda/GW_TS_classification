@@ -32,10 +32,15 @@ def compute_roc(probs, labels, num_classes=3):
     # one-hot encode labels
     y_bin = label_binarize(labels, classes=list(range(num_classes)))
 
-    # ROC per class
     fpr, tpr, roc_auc = {}, {}, {}
+
+    # ROC per class
     for i in range(num_classes):
         fpr[i], tpr[i], _ = roc_curve(y_bin[:, i], probs[:, i])
         roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # micro-average ROC
+    fpr["micro"], tpr["micro"], _ = roc_curve(y_bin.ravel(), probs.ravel())
+    roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
 
     return fpr, tpr, roc_auc

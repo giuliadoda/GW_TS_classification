@@ -7,8 +7,13 @@ import torch.optim as optim
 from torchmetrics.classification import MulticlassAccuracy
 from torch.utils.data import DataLoader
 
+from codecarbon import EmissionsTracker
+
+import time
+
 from utils import dataset, plots, metrics
 
+model_name = 'IT'
 
 seed = 0
 batch_size = 32
@@ -24,6 +29,9 @@ if n_classes==2:
 elif n_classes==3:
     weights = [1,1,5]
 
+# emission tracker
+tracker = EmissionsTracker(project_name="IT_test")
+tracker.start()
 
 # model
 class InceptionModule(nn.Module):
@@ -174,6 +182,8 @@ val_loss_log, val_acc_log = [], []
 acc_metric = MulticlassAccuracy(num_classes=n_classes, average=None).to(device)
 
 # training/validation loop
+# start timer
+start_time = time.time()
 for epoch in range(n_epochs):
     print(f"\n-----------------\nEpoch {epoch+1}/{n_epochs}\n-----------------")
 
@@ -234,4 +244,33 @@ for epoch in range(n_epochs):
     for c, acc in enumerate(class_val_acc):
         print(f" Class {c} accuracy: {acc:.4f}")
 
-plots.plot_loss_acc('IT', train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)
+# end timer
+end_time = time.time()
+total_time = end_time - start_time
+avg_epoch_time = total_time / n_epochs
+
+print(f"\nTotal training time: {total_time:.2f} seconds")
+print(f"Average time per epoch: {avg_epoch_time:.2f} seconds")
+
+# save times to file
+with open(model_name+'_times.txt', 'w') as f:
+    f.write(total_time)
+    f.write(avg_epoch_time)
+
+plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)
+
+plots.plot_model_params(it_net, save_path=model_name+"_params_hist.png")
+
+# save trained model
+model_path = model_name + "_trained.pth"
+torch.save(it_net.state_dict(), model_path)
+
+# save training emissions
+emissions = tracker.stop()
+print(f"\nTotal CO2 emissions: {float(emissions):.6f} kg")
+
+with open(model_name+'_CO2.txt', 'w') as file:
+    file.write(emissions)
+
+# analyze activations
+plots.plot_model_activations(it_net, test_DL, device, max_batches=1)
