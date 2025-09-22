@@ -134,7 +134,7 @@ cnn_opt = optim.Adam(cnn_net.parameters(), lr=LR)
 
 # metrics
 train_loss_log, train_acc_log, train_overall_acc_log = [], [], []
-val_loss_log, val_acc_log = [], []
+val_loss_log, val_acc_log, val_overall_acc_log = [], [], []
 
 acc_metric = MulticlassAccuracy(num_classes=n_classes, average=None).to(device)
 micro_acc_metric = MulticlassAccuracy(num_classes=n_classes, average='micro').to(device)
@@ -192,6 +192,7 @@ for epoch in range(n_epochs):
     val_loss = []
     cnn_net.eval()
     acc_metric.reset()
+    micro_acc_metric.reset()
     with torch.no_grad():
         for sample in valid_DL:
             # data to device
@@ -207,12 +208,15 @@ for epoch in range(n_epochs):
             # save
             val_loss.append(l.item())
             acc_metric.update(out, yb)
+            micro_acc_metric.update(out, yb)
         
     avg_val_loss = np.mean(val_loss)
     class_val_acc = acc_metric.compute().detach().cpu().numpy()
+    overall_val_acc = micro_acc_metric.compute().item()
 
     val_loss_log.append(avg_val_loss)
     val_acc_log.append({c: class_val_acc[c] for c in range(n_classes)})
+    val_overall_acc_log.append(overall_val_acc)
 
     print(f"Validation loss: {avg_val_loss:.4f}")
     for c, acc in enumerate(class_val_acc):
@@ -230,7 +234,7 @@ with open(time_file, 'w') as f:
     f.write('\n')
     f.write(str(avg_epoch_time))
 
-plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)
+plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, train_overall_acc_log, val_overall_acc_log, n_classes=n_classes)
 
 plots.plot_model_params(cnn_net, save_path='./plots/'+model_name+"_params_hist.png")
 
@@ -241,7 +245,6 @@ torch.save(cnn_net.state_dict(), model_path)
 # save training emissions
 emissions = tracker.stop()
 print(f"\nTotal CO2 emissions: {float(emissions):.6f} kg")
-
 co2_file = './model_info/' + model_name+'_CO2.txt'
 with open(co2_file, 'w') as file:
     file.write(str(emissions))

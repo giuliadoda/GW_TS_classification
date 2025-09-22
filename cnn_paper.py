@@ -21,6 +21,8 @@ LR = 1e-04
 nw = 4
 n_epochs = 50
 n_classes = 2 
+std = False
+
 
 # class weights
 if n_classes==2:
@@ -31,7 +33,6 @@ elif n_classes==3:
 # emission tracker
 tracker = EmissionsTracker(project_name="IT_test")
 tracker.start()
-
 
 # model
 class CNN(nn.Module):
@@ -131,10 +132,11 @@ loss_function = nn.CrossEntropyLoss(weight=weights)
 cnn_opt = optim.Adam(cnn_net.parameters(), lr=LR)
 
 # metrics
-train_loss_log, train_acc_log = [], []
-val_loss_log, val_acc_log = [], []
+train_loss_log, train_acc_log, train_overall_acc_log = [], [], []
+val_loss_log, val_acc_log, val_overall_acc_log = [], [], []
 
 acc_metric = MulticlassAccuracy(num_classes=n_classes, average=None).to(device)
+micro_acc_metric = MulticlassAccuracy(num_classes=n_classes, average='micro').to(device)
 
 # training/validation loop
 # start timer
@@ -145,6 +147,7 @@ for epoch in range(n_epochs):
     cnn_net.train()
     epoch_losses = []
     acc_metric.reset()
+    micro_acc_metric.reset()
 
     # training
     for sample in train_DL:
@@ -169,14 +172,16 @@ for epoch in range(n_epochs):
         # log loss and accuracy
         epoch_losses.append(loss.item())
         acc_metric.update(out, yb)
+        micro_acc_metric.update(out, yb)
 
     # average loss and accuracy
     avg_loss = np.mean(epoch_losses)
     class_acc = acc_metric.compute().detach().cpu().numpy()
-
+    overall_acc = micro_acc_metric.compute().item()
 
     train_loss_log.append(avg_loss)
     train_acc_log.append({c: class_acc[c] for c in range(n_classes)})
+    train_overall_acc_log.append(overall_acc)
 
     print(f"Train loss: {avg_loss:.4f}")
     for c, acc in enumerate(class_acc):
@@ -186,6 +191,7 @@ for epoch in range(n_epochs):
     val_loss = []
     cnn_net.eval()
     acc_metric.reset()
+    micro_acc_metric.reset()
     with torch.no_grad():
         for sample in valid_DL:
             # data to device
@@ -201,12 +207,15 @@ for epoch in range(n_epochs):
             # save
             val_loss.append(l.item())
             acc_metric.update(out, yb)
+            micro_acc_metric.update(out, yb)
         
     avg_val_loss = np.mean(val_loss)
     class_val_acc = acc_metric.compute().detach().cpu().numpy()
+    overall_val_acc = micro_acc_metric.compute().item()
 
     val_loss_log.append(avg_val_loss)
     val_acc_log.append({c: class_val_acc[c] for c in range(n_classes)})
+    val_overall_acc_log.append(overall_val_acc)
 
     print(f"Validation loss: {avg_val_loss:.4f}")
     for c, acc in enumerate(class_val_acc):
@@ -217,30 +226,74 @@ end_time = time.time()
 total_time = end_time - start_time
 avg_epoch_time = total_time / n_epochs
 
-print(f"\nTotal training time: {total_time:.2f} seconds")
-print(f"Average time per epoch: {avg_epoch_time:.2f} seconds")
-
 # save times to file
-with open(model_name+'_times.txt', 'w') as f:
+time_file = './model_info/' + model_name+'_times.txt'
+with open(time_file, 'w') as f:
     f.write(total_time)
+    f.write('\n')
     f.write(avg_epoch_time)
 
-plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, n_classes=n_classes)
+plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, train_overall_acc_log, val_overall_acc_log, n_classes=n_classes)
 
-plots.plot_model_params(cnn_net, save_path=model_name+"_params_hist.png")
+plots.plot_model_params(cnn_net, save_path='./plots/'+model_name+"_params_hist.png")
 
 # save trained model
-model_path = model_name + "_trained.pth"
+model_path = './models/'+ model_name + "_trained.torch"
 torch.save(cnn_net.state_dict(), model_path)
 
 # save training emissions
 emissions = tracker.stop()
 print(f"\nTotal CO2 emissions: {float(emissions):.6f} kg")
-
+co2_file = './model_info/' + model_name+'_CO2.txt'
 with open(model_name+'_CO2.txt', 'w') as file:
     file.write(emissions)
 
 # analyze activations
-plots.plot_model_activations(cnn_net, test_DL, device, max_batches=1)
+plots.plot_model_activations(cnn_net, test_DL, device, max_batches=1, save_path='./plots/'+model_name+'_act.png')
 
 # test
+print('\n-- Testing  \n')
+cnn_net.eval()
+all_preds, all_labels, all_probs = [], [], []
+with torch.no_grad():
+    for sample in test_DL:
+        xb = sample[0].float().to(device)
+        yb = sample[1].long().to(device)
+
+        out = cnn_net(xb)
+
+        preds = torch.argmax(out, dim=1)
+
+        all_preds.append(preds.cpu().numpy())
+        all_labels.append(yb.cpu().numpy())
+        all_probs.append(out.cpu().numpy())
+
+all_preds = np.concatenate(all_preds)
+all_labels = np.concatenate(all_labels)
+all_probs = np.concatenate(all_probs)
+
+# ROC
+classes = [f"Class {i}" for i in range(n_classes)]
+fpr, tpr, roc_auc = metrics.compute_roc(all_probs, all_labels, num_classes=n_classes)
+
+# plot ROC
+plots.plot_ROC(model_name, fpr, tpr, roc_auc)
+
+# save AUC values + FPR and TPR points
+roc_file = './model_info/'+model_name+"_ROC.txt"
+with open(roc_file, "w") as f:
+    for i, cls in enumerate(classes):
+        f.write(f"{cls} AUC: {roc_auc[i]:.4f}\n")
+        f.write(f"{cls} FPR: {','.join([f'{x:.6f}' for x in fpr[i]])}\n")
+        f.write(f"{cls} TPR: {','.join([f'{x:.6f}' for x in tpr[i]])}\n\n")
+    
+    # micro-average
+    f.write(f"Micro-average AUC: {roc_auc['micro']:.4f}\n")
+    f.write(f"Micro-average FPR: {','.join([f'{x:.6f}' for x in fpr['micro']])}\n")
+    f.write(f"Micro-average TPR: {','.join([f'{x:.6f}' for x in tpr['micro']])}\n")
+
+# confusion matrix
+plots.plot_CM(model_name, all_preds, all_labels)
+
+# plot predicted signal probabilities
+plots.plot_PS(model_name, all_probs, all_labels, n_classes=n_classes)

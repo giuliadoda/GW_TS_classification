@@ -31,11 +31,11 @@ def plot_TS(ts):
 
 # plot losses and accuracies (training and validation)
 def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_log,
-                  train_overall_acc_log=None, val_overall_acc_log=None, n_classes=2):
+                  train_overall_acc_log, val_overall_acc_log, n_classes=2):
 
     epochs = np.arange(1, len(train_loss_log) + 1)
 
-    # --- Losses ---
+    # losses
     fig, ax = plt.subplots(figsize=(10,6))
     ax.grid(alpha=0.4)
     ax.set_title(model + ' train and validation losses')
@@ -47,7 +47,7 @@ def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_lo
     fig.savefig(path + model + '_loss.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.close(fig)
 
-    # --- Accuracies ---
+    # accuracies
     fig, ax = plt.subplots(figsize=(10,6))
     ax.grid(alpha=0.4)
     ax.set_title(model + ' train and validation accuracies')
@@ -55,9 +55,8 @@ def plot_loss_acc(model, train_loss_log, val_loss_log, train_acc_log, val_acc_lo
     ax.set_ylabel('accuracy')
 
     # overall classifier accuracy
-    if train_overall_acc_log is not None and val_overall_acc_log is not None:
-        ax.plot(epochs, train_overall_acc_log, label='Overall (training)', color='black', linewidth=2)
-        ax.plot(epochs, val_overall_acc_log, label='Overall (validation)', color='black', linewidth=2, linestyle='dashed')
+    ax.plot(epochs, train_overall_acc_log, label='Overall (training)', color='black', linewidth=2)
+    ax.plot(epochs, val_overall_acc_log, label='Overall (validation)', color='black', linewidth=2, linestyle='dashed')
 
     # per-class accuracies
     for c in range(n_classes):
