@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+import math
 
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
@@ -118,6 +119,7 @@ def plot_CM(model, preds, labels):
 def plot_PS(model, probs, labels, n_classes=2):
 
     fig, ax = plt.subplots(figsize=(10,6))
+    ax.grid(alpha=0.3)
 
     for c in range(n_classes):
         mask = (labels == c)
@@ -133,26 +135,45 @@ def plot_PS(model, probs, labels, n_classes=2):
 
 
 # plot weights histogram
-def plot_model_params(model, save_path=None):
+def plot_model_params(model, save_path=None, normalize=True):
 
     # collect all parameters (weights and biases) with names
     params = [(name, p) for name, p in model.named_parameters() if p.requires_grad]
-    
-    n_layers = len(params)
-    fig, axes = plt.subplots(n_layers, 2, figsize=(10, 4*n_layers)) 
-    
+
+    # group by layer name (everything before the last ".")
+    layers = {}
+    for name, p in params:
+        layer_name, param_type = name.rsplit('.', 1)
+        layers.setdefault(layer_name, {})[param_type] = p
+
+    n_layers = len(layers)
+    fig, axes = plt.subplots(n_layers, 2, figsize=(12, 4*n_layers))
+
     if n_layers == 1:
-        axes = [axes]  # make iterable if only one layer
-    
-    for ax, (name, p) in zip(axes, params):
-        values = p.detach().cpu().numpy().flatten()
-        ax.hist(values, color='steelblue', alpha=0.7, edgecolor='black')
-        ax.set_title(f"{name}\nmean={values.mean():.4f}, std={values.std():.4f}")
-        ax.set_xlabel("Value")
-        ax.set_ylabel("Frequency")
-    
+        axes = axes.reshape(1, 2)  # ensure 2D array even for single layer
+
+    for row, (layer_name, param_dict) in enumerate(layers.items()):
+        for col, param_type in enumerate(["weight", "bias"]):
+            ax = axes[row, col]
+            if param_type in param_dict:
+                values = param_dict[param_type].detach().cpu().numpy().flatten()
+                ax.hist(
+                    values,
+                    density=normalize,  
+                    color="steelblue",
+                    alpha=0.7,
+                    edgecolor="black"
+                )
+                ax.set_title(
+                    f"{layer_name}.{param_type}\n"
+                    f"mean={values.mean():.4f}, std={values.std():.4f}"
+                )
+                ax.set_xlabel("Value")
+                ax.set_ylabel("Density" if normalize else "Frequency")
+            else:
+                ax.axis("off")  # blank subplot if no bias
+
     plt.tight_layout()
-    
     if save_path:
         plt.savefig(save_path, dpi=300)
     else:
@@ -161,7 +182,6 @@ def plot_model_params(model, save_path=None):
 
 # plot activations
 def plot_model_activations(model, dataloader, device, max_batches=1, bins=None, save_path=None):
-
     activations = {}
 
     def get_activation(name):
@@ -169,18 +189,19 @@ def plot_model_activations(model, dataloader, device, max_batches=1, bins=None, 
             activations[name] = output.detach().cpu().numpy().flatten()
         return hook
 
-    # Register hooks for Conv and Linear layers
+    # Register hooks
     hooks = []
     for name, layer in model.named_modules():
         if isinstance(layer, (torch.nn.Conv1d, torch.nn.Linear)):
             hooks.append(layer.register_forward_hook(get_activation(name)))
 
-    # Run forward pass on a few batches
+    # Forward pass
     model.eval()
+    model.to(device)
     with torch.no_grad():
         for i, (xb, yb) in enumerate(dataloader):
             xb = xb.float().to(device)
-            _ = model(xb)  # forward pass to collect activations
+            _ = model(xb)
             if i + 1 >= max_batches:
                 break
 
@@ -188,19 +209,28 @@ def plot_model_activations(model, dataloader, device, max_batches=1, bins=None, 
     for h in hooks:
         h.remove()
 
-    # Plot histograms
-    n_layers = len(activations)
-    fig, axes = plt.subplots(1, n_layers, figsize=(5 * n_layers, 4))
+    if not activations:
+        print("No activations collected.")
+        return
 
-    if n_layers == 1:
-        axes = [axes]
+    # Determine layout: 2 columns
+    n_layers = len(activations)
+    n_cols = 2
+    n_rows = math.ceil(n_layers / n_cols)
+
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(6 * n_cols, 4 * n_rows))
+    axes = axes.flatten()  # flatten in case of multiple rows
 
     for ax, (name, act) in zip(axes, activations.items()):
-        ax.hist(act, bins=bins if bins is not None else 'auto', 
+        ax.hist(act, bins=bins if bins is not None else 'auto',
                 color='coral', alpha=0.7, edgecolor='black')
         ax.set_title(f"{name}\nmean={act.mean():.4f}, std={act.std():.4f}")
         ax.set_xlabel("Activation value")
         ax.set_ylabel("Frequency")
+
+    # Turn off unused axes
+    for ax in axes[n_layers:]:
+        ax.axis('off')
 
     plt.tight_layout()
 
