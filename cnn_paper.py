@@ -229,9 +229,9 @@ avg_epoch_time = total_time / n_epochs
 # save times to file
 time_file = './model_info/' + model_name+'_times.txt'
 with open(time_file, 'w') as f:
-    f.write(total_time)
+    f.write(str(total_time))
     f.write('\n')
-    f.write(avg_epoch_time)
+    f.write(str(avg_epoch_time))
 
 plots.plot_loss_acc(model_name, train_loss_log, val_loss_log, train_acc_log, val_acc_log, train_overall_acc_log, val_overall_acc_log, n_classes=n_classes)
 
@@ -245,8 +245,8 @@ torch.save(cnn_net.state_dict(), model_path)
 emissions = tracker.stop()
 print(f"\nTotal CO2 emissions: {float(emissions):.6f} kg")
 co2_file = './model_info/' + model_name+'_CO2.txt'
-with open(model_name+'_CO2.txt', 'w') as file:
-    file.write(emissions)
+with open(co2_file, 'w') as file:
+    file.write(str(emissions))
 
 # analyze activations
 plots.plot_model_activations(cnn_net, test_DL, device, max_batches=1, save_path='./plots/'+model_name+'_act.png')

@@ -122,7 +122,7 @@ def plot_PS(model, probs, labels, n_classes=2):
 
     for c in range(n_classes):
         mask = (labels == c)
-        ax.hist(probs[mask, 1], alpha=0.6, label=classes[c], density=True)
+        ax.hist(probs[mask, 1], bins=20, alpha=0.6, label=classes[c], density=True)
 
     ax.set_xlabel('predicted signal probability')
     ax.set_ylabel('normalized counts')
@@ -221,8 +221,9 @@ def plot_model_activations(model, dataloader, device, max_batches=1, bins=None, 
     axes = axes.flatten()  # flatten in case of multiple rows
 
     for ax, (name, act) in zip(axes, activations.items()):
+        ax.grid(alpha=0.3)
         ax.hist(act, bins=bins if bins is not None else 'auto',
-                color='coral', alpha=0.7, edgecolor='black')
+                color='coral', alpha=0.7, edgecolor='grey')
         ax.set_title(f"{name}\nmean={act.mean():.4f}, std={act.std():.4f}")
         ax.set_xlabel("Activation value")
         ax.set_ylabel("Frequency")

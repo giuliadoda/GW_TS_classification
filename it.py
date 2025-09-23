@@ -19,7 +19,7 @@ seed = 0
 batch_size = 32
 nw = 4
 n_epochs = 30
-LR = 1e-03 # default
+LR = 1e-04 # default is 1e-03
 n_classes = 2
 std = False
 
