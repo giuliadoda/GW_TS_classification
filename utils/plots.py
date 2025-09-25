@@ -106,7 +106,7 @@ def plot_CM(model, preds, labels):
 
     fig, ax = plt.subplots(figsize=(6,6))
 
-    disp.plot(ax = ax, cmap='Blues', values_format='.1f')
+    disp.plot(ax = ax, cmap='Blues', values_format='.3f')
 
     ax.set_title(model + ' confusion matrix')
 
