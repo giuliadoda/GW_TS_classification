@@ -13,6 +13,8 @@ classes = ['Noise', 'Signal']
 # plot signals
 def plot_TS(ts):
 
+    classes_TS = ['Noise', 'Signal', 'Glitch']
+
     time = np.linspace(0,1,num=2048)
 
     fig, ax = plt.subplots(nrows=3, ncols=1, figsize=(28,16))
@@ -20,9 +22,11 @@ def plot_TS(ts):
     for i in range(3):
         ax[i].grid(alpha=0.4)
         ax[i].plot(time, ts[i])
-        ax[i].set_title(classes[i]+' example')
-        ax[i].set_xlabel('time (s)')
-        ax[i].set_ylabel('strain (a.u.)')
+        ax[i].set_ylabel(classes_TS[i]+' strain (a.u.)', fontsize=16)
+        ax[i].tick_params(axis='both', which='major', labelsize=12)
+        ax[i].tick_params(axis='both', which='minor', labelsize=12)
+    
+    ax[2].set_xlabel('time (s)', fontsize=16)
 
     fig.savefig('./plots/timeseries.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
     plt.show()
@@ -83,11 +87,11 @@ def plot_ROC(model, fpr, tpr, roc_auc):
 
     # per-class
     for i, cls in enumerate(classes):
-        ax.plot(fpr[i], tpr[i], label=f"{cls} (AUC = {roc_auc[i]:.2f})")
+        ax.plot(fpr[i], tpr[i], label=f"{cls} (AUC = {roc_auc[i]:.3f})")
 
     # micro-average ROC
     ax.plot(fpr["micro"], tpr["micro"], 
-            label=f"Micro-average (AUC = {roc_auc['micro']:.2f})", 
+            label=f"Micro-average (AUC = {roc_auc['micro']:.3f})", 
             linewidth=2, color='black')
 
     ax.legend()
