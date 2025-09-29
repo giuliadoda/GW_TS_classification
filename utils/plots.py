@@ -29,7 +29,6 @@ def plot_TS(ts):
     ax[2].set_xlabel('time (s)', fontsize=16)
 
     fig.savefig('./plots/timeseries.png', bbox_inches='tight', pad_inches=0.6, dpi=400)
-    plt.show()
     plt.close(fig)
 
 
